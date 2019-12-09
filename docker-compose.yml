@@ -1,0 +1,39 @@
+version: '3'
+services:
+
+  mq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: mq_username
+      RABBITMQ_DEFAULT_PASS: mq_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  publish:
+    image: local/mq-app-publish
+    build:
+      context: ./mq-app-publish
+      dockerfile: ../Dockerfile
+    environment:
+      MQ_APP_RABBITMQ_HOST: mq
+      MQ_APP_RABBITMQ_USER: mq_username
+      MQ_APP_RABBITMQ_PASS: mq_password
+    depends_on:
+      - mq
+    ports:
+      - "8081:8080"
+
+  subscribe:
+    image: local/mq-app-subscribe
+    build:
+      context: ./mq-app-subscribe
+      dockerfile: ../Dockerfile
+    environment:
+      MQ_APP_RABBITMQ_HOST: mq
+      MQ_APP_RABBITMQ_USER: mq_username
+      MQ_APP_RABBITMQ_PASS: mq_password
+    depends_on:
+      - mq
+    ports:
+      - "8082:8080"
